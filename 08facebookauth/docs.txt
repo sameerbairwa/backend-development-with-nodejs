@@ -1,0 +1,15 @@
+828594410974556
+a40923b36b61cfd5ade36e05fb53c271
+//npm install body-parser connect-ensure-login cookie-parser ejs exauth>press express-session morgan passport passport-facebook
+
+mongoDB documentation:
+server-> data models ->  data modeling introduction 
+server-> data models -> Indexes
+
+
+server-> data models ->  data modeling introduction :
+
+
+
+mongoDB key:tkfP56q3tANG0oez
+

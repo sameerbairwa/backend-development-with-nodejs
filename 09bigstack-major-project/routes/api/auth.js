@@ -28,32 +28,32 @@ router.post("/register", (req, res) => {
             email: req.body.email
         })
         .then(person => {
-                if (person) {
-                    return res.status(400).json({
-                        emailerror: "Email is already registered in our system"
+            if (person) {
+                return res.status(400).json({
+                    emailerror: "Email is already registered in our system"
+                });
+            } else {
+                const newPerson = new Person({
+                    name: req.body.name,
+                    email: req.body.email,
+                    password: req.body.password
+                });
+                //Encrypt password using bcrypt
+                bcrypt.genSalt(10, (err, salt) => {
+                    bcrypt.hash(newPerson.password, salt, (err, hash) => {
+                        if (err) throw err;
+                        newPerson.password = hash;
+                        newPerson
+                            .save()
+                            .then(person => res.json(person))
+                            .catch(err => console.log(err));
                     });
-                } else {
-                    const newPerson = new Person({
-                        name: req.body.name,
-                        email: req.body.email,
-                        password: req.body.password
-                    });
-                    //Encrypt password using bcrypt
-                    bcrypt.genSalt(10, (err, salt) => {
-                            bcrypt.hash(newPerson.password, salt, (err, hash) => {
-                                if (err) throw err;
-                                newPerson.password = hash;
-                                newPerson
-                                    .save()
-                                    .then(person => res.json(person))
-                                    .catch(err => console.log(err));
-                            });
-                    });
+                });
 
             }
 
         })
-.catch(err => Console.log(err));
+        .catch(err => Console.log(err));
 
 });
 
@@ -63,28 +63,70 @@ router.post("/register", (req, res) => {
 //@desc     route for login of usres
 //@access   PUBLIC
 
-router.post("/login", (req, res) =>{
+router.post("/login", (req, res) => {
     const email = req.body.email
     const password = req.body.password
 
-    Person.findOne({email})
+    Person.findOne({
+            email
+        })
         .then(person => {
-            if(!person){
-                return res.status(404).json({emailerror:"user not found with this email"})
+            if (!person) {
+                return res.status(404).json({
+                    emailerror: "user not found with this email"
+                })
             }
             bcrypt.compare(password, person.password)
-            .then(isCorrect => {
-                if(isCorrect){
-                    res.json({success: "loged in successfully"})
-                    //use payload and create token for user
-                }
-                else{
-                    res.status(400).json({passworderror:"Password is not correct"})
-                }
-            })
-            .catch(err => console.log(err));
+                .then(isCorrect => {
+                    if (isCorrect) {
+                        //res.json({success: "loged in successfully"})
+                        //use payload and create token for user
+                        const payload = {
+                            id: person.id,
+                            name: person.name,
+                            email: person.email
+                        }
+                        jsonwt.sign(
+                            payload,
+                            key.secret, {
+                                expiresIn: 3600
+                            },
+                            (err, token) => {
+                                if (err) throw err;
+                                res.json({
+                                    success: true,
+                                    token: "Bearer " + token
+                                })
+
+                            }
+                        )
+                    } else {
+                        res.status(400).json({
+                            passworderror: "Password is not correct"
+                        })
+                    }
+                })
+                .catch(err => console.log(err));
         })
         .catch(err => console.log(err));
+})
+
+
+//@type     GET
+//@route    /api/auth/profile
+//@desc     user profile
+//@access   PRIVATE
+
+router.get('/profile', passport.authenticate('jwt', {
+    session: false
+}), (req, res) => {
+    //console.log(req)
+    res.json({
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        profilepic: req.user.profilepic
+    })
 })
 
 

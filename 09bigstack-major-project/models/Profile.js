@@ -18,7 +18,7 @@ const profileSchema = new Schema({
     country: {
         type: String
     },
-    language: {
+    languages: {
         type: [String],
         required: true
     },
@@ -37,12 +37,10 @@ const profileSchema = new Schema({
             type: String
         },
         from: {
-            type: Date,
-            required: true
+            type: Date
         },
         to: {
-            type: Date,
-            required: true
+            type: Date
         },
         current: {
             type: Boolean,
@@ -63,6 +61,10 @@ const profileSchema = new Schema({
             type: String
         }
 
+    },
+    LastModifydate:{
+        type : Date,
+        default: Date.now
     }
 });
 
